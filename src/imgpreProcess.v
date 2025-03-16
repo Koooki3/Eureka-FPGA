@@ -30,28 +30,40 @@ module imgpreProcess(
     output       [7:0]   proc_data    
 );
 
-    // 添加内部控制信号
-    reg         process_en;    // 处理使能信号
-    reg [11:0]  pixel_cnt;     // 像素计数器
-    reg [11:0]  line_cnt;      // 行计数器
+    // 优化process_en逻辑，减少寄存器使用
+    reg process_en;
+    reg [11:0] pixel_cnt, line_cnt;
+    reg [1:0] line_valid_cnt;  // 用于跟踪有效行数
+    wire pixel_end = pixel_cnt == img_width - 1;
+    wire line_end = line_cnt == img_width - 1;
     
-    // 处理控制逻辑
+    // 修改计数器逻辑
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             process_en <= 1'b0;
             pixel_cnt <= 12'd0;
             line_cnt <= 12'd0;
-        end else if (din_valid) begin
-            if (pixel_cnt == img_width - 1) begin
-                pixel_cnt <= 12'd0;
-                if (line_cnt == img_width - 1)
-                    line_cnt <= 12'd0;
-                else
-                    line_cnt <= line_cnt + 1'd1;
-            end else begin
-                pixel_cnt <= pixel_cnt + 1'd1;
+            line_valid_cnt <= 2'd0;
+        end else begin
+            if (din_valid) begin
+                if (pixel_cnt == img_width - 1) begin
+                    pixel_cnt <= 12'd0;
+                    if (line_cnt == img_width - 1)
+                        line_cnt <= 12'd0;
+                    else
+                        line_cnt <= line_cnt + 1'd1;
+                end else begin
+                    pixel_cnt <= pixel_cnt + 1'd1;
+                end
+                
+                // 修改行计数逻辑
+                if (pixel_cnt == img_width - 1) begin
+                    if (line_valid_cnt < 2'd2)
+                        line_valid_cnt <= line_valid_cnt + 1'd1;
+                end
             end
-            process_en <= (line_cnt > 12'd1) || (line_cnt == 12'd1 && pixel_cnt > 12'd1);
+            // 更新process_en逻辑
+            process_en <= (line_valid_cnt == 2'd2) && din_valid;
         end
     end
 

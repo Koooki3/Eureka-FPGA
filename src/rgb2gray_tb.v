@@ -41,6 +41,7 @@ module rgb2gray_tb();
     always #5000 clk = ~clk;
     
     initial begin
+
         clk = 0;
         rst_n = 1;
         din_valid = 0;
@@ -48,6 +49,7 @@ module rgb2gray_tb();
         g_data = 0;
         b_data = 0;
         
+        // 复位测试
         #10000;
         rst_n = 0;
         #10000;
@@ -55,25 +57,41 @@ module rgb2gray_tb();
         
         #20000;
         
+        // 测试用例1：纯白
         din_valid = 1;
         r_data = 8'd255;
         g_data = 8'd255;
         b_data = 8'd255;
         #10000;
         
+        // 测试用例2：纯黑
         r_data = 8'd0;
         g_data = 8'd0;
         b_data = 8'd0;
         #10000;
         
+        // 测试用例3：纯红
         r_data = 8'd255;
         g_data = 8'd0;
         b_data = 8'd0;
         #10000;
         
+        // 测试用例4：灰色
         r_data = 8'd128;
         g_data = 8'd128;
         b_data = 8'd128;
+        #10000;
+        
+        // 测试用例5：纯绿
+        r_data = 8'd0;
+        g_data = 8'd255;
+        b_data = 8'd0;
+        #10000;
+        
+        // 测试用例6：纯蓝
+        r_data = 8'd0;
+        g_data = 8'd0;
+        b_data = 8'd255;
         #10000;
         
         din_valid = 0;
@@ -83,7 +101,10 @@ module rgb2gray_tb();
     end
     
     initial begin
-        $monitor("Time=%d ns: valid=%b, gray=%d", $time/1000, dout_valid, gray_data);
+        $dumpfile("rgb2gray_tb.vcd");
+        $dumpvars(0, rgb2gray_tb);
+        $monitor("Time=%4d ns: valid=%b, R=%3d, G=%3d, B=%3d, gray=%3d", 
+                 $time/1000, dout_valid, r_data, g_data, b_data, gray_data);
     end
 
 endmodule
