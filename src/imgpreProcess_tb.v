@@ -103,7 +103,7 @@ module imgpreProcess_tb();
 
     integer file_out;
     initial begin
-        file_out = $fopen("D:/Eureka-FPGA/Eureka/Eureka.srcs/sim_1/new/process_result.txt", "w");
+        file_out = $fopen("D:/Eureka-FPGA/Eureka/Eureka.srcs/sim_1/new/process_result.txt", "w"); //自定义地址
         forever @(posedge clk) begin
             if(dout_valid)
                 $fwrite(file_out, "Time=%0t proc_data=%d\n", $time, proc_data);
